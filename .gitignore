@@ -1,0 +1,33 @@
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+venv/
+.env
+env/
+
+# IDEs
+.vscode/
+.idea/
+
+# Django
+*.sqlite3
+/staticfiles/
+/media/
+
+# Mac/Windows
+.DS_Store
+Thumbs.db
+
+# Python packaging
+dist/
+build/
+*.egg-info/
+
+# VSCode settings
+.vscode/
+
+# Temp
+*.log
