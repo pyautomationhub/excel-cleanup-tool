@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File Processed Successfully</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen py-8">
+    <div class="bg-white p-8 rounded-2xl shadow-md w-full max-w-md text-center">
+        <div class="mb-6">
+            <svg class="mx-auto h-16 w-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+        <h1 class="text-2xl font-bold mb-4">File Processed Successfully!</h1>
+        <p class="text-gray-600 mb-2">Your Excel file has been automatically cleaned.</p>
+        <p class="text-sm text-gray-500 mb-6">
+            Text normalized • Numbers formatted • Dates detected • Duplicates removed
+        </p>
+        <div class="space-y-3">
+            <a href="{% url 'download_file' %}" class="block bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition duration-200 font-medium">
+                Download Cleaned File
+            </a>
+            <a href="{% url 'upload_file' %}" class="block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-200 font-medium">
+                Back to Main Page
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+

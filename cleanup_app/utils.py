@@ -1,53 +1,54 @@
+# utils.py
+
 import pandas as pd
 import numpy as np
 import re
 import tempfile
-import os
 
 def cleanup_excel(file):
+    """
+    Curăță orice fișier Excel încărcat:
+    - spații și caractere neuniforme în text
+    - normalizează valorile numerice
+    - detectează coloanele ce par date și le convertește
+    - elimină duplicate și rânduri complet goale
+    - returnează calea către fișierul temporar curățat
+    """
     df = pd.read_excel(file)
 
+    # 🔹 Curățare text în toate coloanele de tip object
     def curata_text(x):
         if pd.isna(x):
             return np.nan
         x = str(x).strip()
-        x = re.sub(r'\s+', ' ', x)
-        x = x.capitalize()
+        x = re.sub(r'\s+', ' ', x)  # elimină spații multiple
         return x
 
-    text_cols = ["Nume", "Prenume", "Departament", "Funcție", "Manager direct", "Oraș", "Tip contract", "Status"]
-    for col in df.columns.intersection(text_cols):
-        df[col] = df[col].astype(str).apply(curata_text)
+    for col in df.columns:
+        if df[col].dtype == "object":
+            df[col] = df[col].apply(curata_text)
 
-    # Emailuri și telefoane
-    if "Email" in df.columns:
-        df["Email"] = df["Email"].str.lower().str.strip()
+    # 🔹 Normalizare valori numerice
+    for col in df.columns:
+        # dacă conținutul poate fi numeric, îl convertim
+        df[col] = pd.to_numeric(df[col], errors="ignore")
 
-    if "Număr de telefon" in df.columns:
-        df["Număr de telefon"] = df["Număr de telefon"].astype(str).str.replace(r"\s+", "", regex=True)
+    # 🔹 Detectare automat coloane ce par date
+    for col in df.columns:
+        if df[col].dtype == "object":
+            sample = df[col].dropna().astype(str).head(10)
+            if sample.str.contains(r'\d{4}|\d{1,2}/\d{1,2}/\d{2,4}', regex=True).any():
+                try:
+                    df[col] = pd.to_datetime(df[col], errors="coerce", dayfirst=True)
+                except:
+                    pass
 
-    # Salarii
-    if "Salariu brut" in df.columns:
-        df["Salariu brut"] = df["Salariu brut"].apply(
-            lambda v: float(re.findall(r"\d+", str(v).replace("RON", ""))[0]) if re.findall(r"\d+", str(v)) else np.nan
-        )
+    # 🔹 Elimină duplicate (pe toate coloanele) și rânduri complet goale
+    df = df.drop_duplicates().dropna(how="all")
 
-    # Date
-    for col in ["Data nașterii", "Data angajării", "Data ultimei evaluări"]:
-        if col in df.columns:
-            df[col] = pd.to_datetime(df[col], errors="coerce", dayfirst=True)
-
-    # Eliminăm duplicate și rânduri goale
-    df = df.drop_duplicates(subset=["Nume", "Prenume", "CNP"], keep="first").dropna(how="all")
-
-    # Completăm câteva câmpuri lipsă
-    if "Status" in df.columns:
-        df["Status"] = df["Status"].fillna("Activ")
-    if "Tip contract" in df.columns:
-        df["Tip contract"] = df["Tip contract"].fillna("Permanent")
-
-    # Salvăm fișierul curățat într-un fișier temporar
+    # 🔹 Salvare fișier curățat într-un fișier temporar
     cleaned_file = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx")
     df.to_excel(cleaned_file.name, index=False)
     cleaned_file.close()
+
     return cleaned_file.name
